@@ -1,0 +1,181 @@
+{
+  "info": {
+    "name": "EnergeX API Collection",
+    "description": "API endpoints for EnergeX Hiring Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8000/api/posts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My First Post\",\n  \"content\": \"This is the content of my first post.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/posts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8000/api/posts/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "posts", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/posts/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "posts", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cache Service",
+      "item": [
+        {
+          "name": "Get Cached Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3001/cache/posts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["cache", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Get Cached Single Post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3001/cache/posts/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["cache", "posts", "1"]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

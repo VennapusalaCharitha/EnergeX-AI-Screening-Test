@@ -1,0 +1,89 @@
+
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: energex_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: energex_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - energex_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: energex_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - energex_network
+
+  # Lumen API
+  lumen-api:
+    build:
+      context: ./backend-lumen
+      dockerfile: Dockerfile
+    container_name: energex_lumen
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=mysql
+      - DB_DATABASE=energex_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./backend-lumen:/var/www/html
+    networks:
+      - energex_network
+
+  # Node.js Cache Service
+  cache-service:
+    build:
+      context: ./backend-nodejs
+      dockerfile: Dockerfile
+    container_name: energex_cache
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=mysql
+      - DB_NAME=energex_db
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - energex_network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: energex_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - lumen-api
+    networks:
+      - energex_network
+
+volumes:
+  mysql_data:
+
+networks:
+  energex_network:
+    driver: bridge
