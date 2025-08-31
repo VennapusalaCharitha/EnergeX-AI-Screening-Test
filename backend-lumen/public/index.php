@@ -14,19 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Debug logging
+error_log("URI: $uri, Method: $method");
+
 // Database connection
 $pdo = new PDO('mysql:host=mysql;dbname=energex_db', 'root', 'password');
 
 if ($uri === '/api/register' && $method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $role = isset($input['role']) ? $input['role'] : 'user';
-    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
     $result = $stmt->execute([
         $input['name'],
         $input['email'],
-        password_hash($input['password'], PASSWORD_DEFAULT),
-        $role
+        password_hash($input['password'], PASSWORD_DEFAULT)
     ]);
     
     if ($result) {
@@ -113,8 +114,9 @@ if ($uri === '/api/posts' && $method === 'POST') {
     exit;
 }
 
-if (preg_match('/\/api\/posts\/(\d+)/', $uri, $matches) && $method === 'DELETE') {
-    $postId = $matches[1];
+if ($method === 'DELETE' && strpos($uri, '/api/posts/') === 0) {
+    $postId = (int)str_replace('/api/posts/', '', $uri);
+    // $postId already set above
     
     // Get user ID from token
     $headers = getallheaders();
@@ -132,13 +134,8 @@ if (preg_match('/\/api\/posts\/(\d+)/', $uri, $matches) && $method === 'DELETE')
         exit;
     }
     
-    // Get user role
-    $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $userRole = $stmt->fetchColumn();
-    
-    // Allow deletion if user owns post OR user is admin/moderator
-    if ($post['user_id'] != $userId && !in_array($userRole, ['admin', 'moderator'])) {
+    // Allow deletion only if user owns the post
+    if ($post['user_id'] != $userId) {
         http_response_code(403);
         echo json_encode(['error' => 'Unauthorized']);
         exit;
@@ -153,6 +150,23 @@ if (preg_match('/\/api\/posts\/(\d+)/', $uri, $matches) && $method === 'DELETE')
         http_response_code(400);
         echo json_encode(['error' => 'Delete failed']);
     }
+    exit;
+}
+
+if ($uri === '/debug/posts' && $method === 'GET') {
+    $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(['debug' => true, 'posts' => $posts]);
+    exit;
+}
+
+if ($uri === '/debug/request' && $method === 'GET') {
+    echo json_encode([
+        'uri' => $uri,
+        'method' => $method,
+        'all_uris' => $_SERVER['REQUEST_URI'],
+        'path_info' => $_SERVER['PATH_INFO'] ?? 'not set'
+    ]);
     exit;
 }
 

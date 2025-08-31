@@ -9,6 +9,7 @@ function App() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -45,8 +46,8 @@ function App() {
 
   const handlePostCreated = () => {
     setShowCreatePost(false);
-    // Force refresh of posts by reloading the page or updating state
-    window.location.reload();
+    // Force refresh by updating a key
+    setRefreshKey(Date.now());
   };
 
   if (loading) {
@@ -99,7 +100,10 @@ function App() {
             onCancel={() => setShowCreatePost(false)}
           />
         ) : (
-          <PostList onCreatePost={() => setShowCreatePost(true)} />
+          <PostList 
+            key={refreshKey}
+            onCreatePost={() => setShowCreatePost(true)} 
+          />
         )}
       </main>
     </div>

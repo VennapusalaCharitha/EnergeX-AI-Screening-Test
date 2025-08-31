@@ -34,10 +34,11 @@ const PostList: React.FC<PostListProps> = ({ onCreatePost }) => {
   const fetchPosts = async () => {
     try {
       const response = await postsAPI.getPosts();
-      setPosts(response.posts);
+      setPosts(response.posts || []);
       setCached(response.cached || false);
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -46,10 +47,24 @@ const PostList: React.FC<PostListProps> = ({ onCreatePost }) => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
-        await postsAPI.deletePost(id);
+        console.log('Attempting to delete post:', id);
+        const response = await postsAPI.deletePost(id);
+        console.log('Delete response:', response);
+        
+        // Remove from local state immediately
         setPosts(posts.filter(post => post.id !== id));
+        
+        // Also refresh from server to ensure consistency
+        setTimeout(async () => {
+          await fetchPosts();
+        }, 500);
+        
+        alert('Post deleted successfully!');
       } catch (error) {
         console.error('Error deleting post:', error);
+        alert('Failed to delete post. Please try again.');
+        // Refresh posts to show current state
+        await fetchPosts();
       }
     }
   };
